@@ -1,29 +1,56 @@
 package com.example.pushnotification
 
+import android.Manifest.permission.POST_NOTIFICATIONS
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import androidx.core.content.ContextCompat
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-
+checkPermssion()
         createChannel(
             getString(R.string.channel_id),
             getString(R.string.channel_name)
         )
-        createNotification()
+       // createNotification()
     }
 
+    private fun checkPermssion() {
+        if (ContextCompat.checkSelfPermission(this,POST_NOTIFICATIONS)!= PackageManager.PERMISSION_GRANTED) {
+            createNotification()
+        } else {
+            val requestPermissionLauncher =
+                registerForActivityResult(
+                    ActivityResultContracts.RequestPermission()
+                ) { isGranted: Boolean ->
+                    if (isGranted) {
+                        createNotification()
+                    } else {
+                        // Explain to the user that the feature is unavailable because the
+                        // feature requires a permission that the user has denied. At the
+                        // same time, respect the user's decision. Don't link to system
+                        // settings in an effort to convince the user to change their
+                        // decision.
+                    }
+                }
+            requestPermissionLauncher.launch(POST_NOTIFICATIONS)
+        }
 
+
+    }
 
 
     private fun createChannel(channelId: String, channelName: String) {
